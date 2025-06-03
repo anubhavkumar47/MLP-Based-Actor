@@ -11,8 +11,8 @@ class TD3:
         max_action,
         actor_class,
         critic_class,
-        actor_lr=1e-4,         # Lowered LR for stability
-        critic_lr=1e-3,
+        actor_lr=3e-4,         # Lowered LR for stability
+        critic_lr=3e-3,
         tau=0.005,
         gamma=0.99,
         policy_noise=0.2,
@@ -49,6 +49,7 @@ class TD3:
         action = self.actor(state)
         return action.cpu().data.numpy().flatten()
 
+    
     def train(self, replay_buffer, batch_size=256):
         self.total_it += 1
 
@@ -70,10 +71,12 @@ class TD3:
             target_Q = reward + not_done * self.gamma * target_Q
 
         current_Q1, current_Q2 = self.critic(state, action)
-        critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
+        critic_loss = F.mse_loss(current_Q1, target_Q)
 
         self.critic_optimizer.zero_grad()
+
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic.parameters(), max_norm=1.0)
         self.critic_optimizer.step()
 
         # --- Actor update ---
@@ -89,6 +92,7 @@ class TD3:
 
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.actor.parameters(), max_norm=1.0)
             self.actor_optimizer.step()
 
             # Soft update targets
@@ -99,6 +103,7 @@ class TD3:
             'critic_loss': critic_loss.item(),
             'actor_loss': actor_loss.item() if actor_loss is not None else None
         }
+
 
     def _soft_update(self, net, target_net):
         for param, target_param in zip(net.parameters(), target_net.parameters()):
