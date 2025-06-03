@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import os
-
+import math
 from enviroment import Environment      # Your UAV environment
 from model import MLPActor, DoubleCritic
 from policy import TD3                  # Or whatever your agent class is called
@@ -27,7 +27,7 @@ agent = TD3(
 replay_buffer = ReplayBuffer(state_dim, action_dim)
 
 # ==== Training settings ====
-episodes          = 10000
+episodes          = 1000
 max_steps         = 150
 batch_size        = 512
 epsilon_start     = 1.0     # start fully random
@@ -54,10 +54,8 @@ for episode in range(episodes):
     ep_critic=0
 
     # linearly decay epsilon
-    epsilon = max(
-        epsilon_end,
-        epsilon_start - (episode / epsilon_decay) * (epsilon_start - epsilon_end)
-    )
+    epsilon = epsilon_end+(epsilon_start-epsilon_end)*math.exp(-1.0 * episode/30)
+
 
     for step in range(max_steps):
         # ε-greedy action:
@@ -108,7 +106,7 @@ for episode in range(episodes):
     actor_losses.append(ep_actor/max_steps)
     aoi_list.append(ep_aoi)
     total_episode.append(episode)
-    print(f"Ep {episode+1:3d} | Avg Reward: {ep_reward/max_steps:8.2f} | ε = {epsilon:.3f}")
+    print(f"Ep {episode+1:3d} | Avg Reward: {ep_reward/max_steps:8.2f} | ε = {epsilon:.3f}   | Avg Critic Loss {ep_critic/max_steps:.2f}  |  Avg Actor Loss {ep_actor/max_steps:.2f}  | Avg AoI {ep_aoi/max_steps:.2f}")
     print("--------------------------------------------------------------------------------------------------------------------")
 
 # ==== Save models & logs ====
@@ -130,6 +128,6 @@ pd.DataFrame({
     "Energy":energy_consumption,
     "AoI":aoi_list
 
-}).to_csv("training_mlp_log_2.csv", index=False)
+}).to_csv("training_mlp_log_4.csv", index=False)
 
 print("Training complete. Logs in training_mlp_log.csv")
