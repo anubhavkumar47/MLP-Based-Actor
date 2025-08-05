@@ -115,10 +115,10 @@ class Environment:
             out_of_bounds = True
 
         if out_of_bounds:
-            r_P+ = 9  # Large penalty for going out of bounds
+            r_P+= 9  # Large penalty for going out of bounds
 
         else :
-            r_P +=9
+            r_P+=9
 
         # Update positions
         past_position_A = self.current_position_A
@@ -133,7 +133,7 @@ class Environment:
         self.E += total_energy
 
         # Update AoI for all IoTDs
-        self.AoI += 1
+        self.AoI+= 1
 
         # Calculate secure transmission rates
         R_sec = self._calculate_secure_rates()
@@ -145,7 +145,7 @@ class Environment:
         if R_sec[selected_iotd] > self.R_min and delta[selected_iotd] > 0.5:
             # Successful transmission - reset AoI and update reward
             r_A = -0.1*self.AoI[selected_iotd]  # Negative of AoI as in paper
-            r_P +=9
+            r_P+=9
             # Update energy level for the IoTD
             self.A += self.AoI[selected_iotd]
             self.AoI[selected_iotd] = 0
@@ -240,3 +240,4 @@ class Environment:
             R_sec[i] = max(0, R_D[i] - np.max(R_E[i, :]))
 
         return R_sec
+
