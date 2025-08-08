@@ -70,7 +70,8 @@ for episode in range(episodes):
             action = (action + noise).clip(-max_action, max_action)
 
         # interact with env
-        next_state, reward, done, energy,aoi = env.step(action)
+        action = action + np.random.normal(0,policy_noise,size=action_dim)
+        next_state, reward, done, info_env = env.step(action)
         #print("Reward",step,reward)
         #print(energy)
         #print(aoi)
@@ -80,8 +81,8 @@ for episode in range(episodes):
 
         state      = next_state
         ep_reward += reward
-        ep_energy+=energy
-        ep_aoi+=aoi
+        ep_energy += info_env['energy']
+        ep_aoi += info_env['aoi']
 
 
         # train once buffer has enough samples
@@ -106,7 +107,7 @@ for episode in range(episodes):
     actor_losses.append(ep_actor/max_steps)
     aoi_list.append(ep_aoi)
     total_episode.append(episode)
-    print(f"Ep {episode+1:3d} | Avg Reward: {ep_reward/max_steps:8.2f} | ε = {epsilon:.3f}   | Avg Critic Loss {ep_critic/max_steps:.2f}  |  Avg Actor Loss {ep_actor/max_steps:.2f}  | Avg AoI {ep_aoi/max_steps:.2f}")
+    print("Ep :- ",episode , "Reward:-",ep_reward/max_steps , "Energy:-",ep_energy/max_steps, "AoI:-",ep_aoi/max_steps )
     print("--------------------------------------------------------------------------------------------------------------------")
 
 # ==== Save models & logs ====
@@ -131,3 +132,4 @@ pd.DataFrame({
 }).to_csv("training_mlp_log_4.csv", index=False)
 
 print("Training complete. Logs in training_mlp_log.csv")
+
