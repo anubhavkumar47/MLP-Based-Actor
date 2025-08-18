@@ -27,7 +27,7 @@ agent = TD3(
 replay_buffer = ReplayBuffer(state_dim, action_dim)
 
 # ==== Training settings ====
-episodes          = 6000
+episodes          = 1000
 max_steps         = 150
 batch_size        = 512
 epsilon_start     = 1.0     # start fully random
@@ -132,4 +132,5 @@ pd.DataFrame({
 }).to_csv("training_mlp_log_4.csv", index=False)
 
 print("Training complete. Logs in training_mlp_log.csv")
+
 
